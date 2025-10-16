@@ -1,4 +1,3 @@
-from datetime import date
 class Account:
     def __init__(self, first_name, last_name, pesel, promo_kod=None):
         self.first_name = first_name
