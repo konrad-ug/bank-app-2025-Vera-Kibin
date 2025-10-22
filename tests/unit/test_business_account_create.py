@@ -1,12 +1,11 @@
-from src.account import BusinessAccount
-
+from src.business_account import BusinessAccount
 
 class TestBusinessAccount:
     def test_account_creation(self):
         account = BusinessAccount("KIBINGUITARS", "1234567890")
         assert account.company_name == "KIBINGUITARS"
         assert account.nip == "1234567890"
-        assert account.balance == 0
+        assert account.balance == 0.0
 
     def test_nip_empty(self):
         account = BusinessAccount("KIBINGUITARS", "")
