@@ -198,3 +198,60 @@ class TestAccount_Transfers:
         account = Account("Vera", "Kibin", 81020311161, "PROM_hej")
         account.przelew_wychodzacy("50")
         assert account.balance == 0
+
+## przelewy ekspresowe
+
+    def test_przelew_ekspresowy_z_prom(self):
+        account = Account("Vera", "Kibin", 81020311161, "PROM_hej")
+        account.przelew_ekspresowy(45)
+        assert account.kwota_express == 1
+        assert account.balance == 4
+
+    def test_przelew_ekspresowy(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy(45)
+        assert account.kwota_express == 1
+        assert account.balance == 4
+        
+    def test_przelew_ekspresowy_full(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy(50)
+        assert account.balance == -1
+
+    def test_przelew_ekspresowy_less(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy(51)
+        assert account.balance == 50
+
+    def test_przelew_ekspresowy_kilka(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy(10)
+        account.przelew_ekspresowy(10)
+        account.przelew_ekspresowy(10)
+        account.przelew_ekspresowy(10)
+        assert account.balance == 6
+
+    def test_przelew_ekspresowy_string(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy("51")
+        assert account.balance == 50
+
+    def test_przelew_ekspresowy_kilka_string(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy("10")
+        account.przelew_ekspresowy("10")
+        account.przelew_ekspresowy("10")
+        account.przelew_ekspresowy("10")
+        assert account.balance == 6
+
+    def test_przelew_ekspresowy_string_bledny(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy("51k")
+        assert account.balance == 50

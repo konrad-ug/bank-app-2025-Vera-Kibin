@@ -1,7 +1,9 @@
 class BaseAccount:
     def __init__(self):
          self.balance = 0
-         
+
+    kwota_express = 0
+
     def sprawdzanie_kwoty(self, kwota):
         if isinstance(kwota, str):
             if kwota.isdigit():
@@ -25,10 +27,19 @@ class BaseAccount:
             self.balance = self.balance - result
             return self.balance
         return False
-
+    
+    def przelew_ekspresowy(self, kwota):
+        result = self.sprawdzanie_kwoty(kwota)
+        kwota = self.kwota_express
+        if result > 0 and self.balance>=result:
+            self.balance = self.balance - (result+kwota)
+            return self.balance
+        return False
+        
 class Account(BaseAccount):
     def __init__(self, first_name, last_name, pesel, promo_kod=None):
         super().__init__()
+        self.kwota_express = 1
         self.first_name = first_name
         self.last_name = last_name
         self.pesel = self.to_string_pesel(pesel)
@@ -85,6 +96,7 @@ class Account(BaseAccount):
 class BusinessAccount(BaseAccount):
     def __init__(self, company_name, nip):
         super().__init__()
+        self.kwota_express = 5
         self.company_name = company_name
         self.nip = self.to_string_nip(nip)
 

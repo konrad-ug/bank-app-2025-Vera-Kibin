@@ -89,6 +89,11 @@ class TestBusinessAccount_Transfers:
         account.przelew_wychodzacy(10)
         assert account.balance == 0
 
+    def test_przelew_wych_mniej_niz_zero_int(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(5)
+        account.przelew_wychodzacy(-5)
+        assert account.balance == 5
 
     def test_przelew_wych_jeden_int(self):
         account = BusinessAccount("KIBINGUITARS", "1234567890")
@@ -188,3 +193,60 @@ class TestBusinessAccount_Transfers:
         account.przelew_przychodzacy(10)
         account.przelew_wychodzacy("!)-")
         assert account.balance == 10
+
+## przelewy ekspresowe
+
+    def test_przelew_ekspresowy_z_prom(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_ekspresowy(45)
+        assert account.kwota_express == 5
+        assert account.balance == 0
+
+    def test_przelew_ekspresowy(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy(45)
+        assert account.kwota_express == 5
+        assert account.balance == 0
+        
+    def test_przelew_ekspresowy_full(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy(50)
+        assert account.balance == -5
+
+    def test_przelew_ekspresowy_less(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy(51)
+        assert account.balance == 50
+
+    def test_przelew_ekspresowy_kilka(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy(10)
+        account.przelew_ekspresowy(10)
+        account.przelew_ekspresowy(10)
+        account.przelew_ekspresowy(10)
+        assert account.balance == 5
+
+    def test_przelew_ekspresowy_string(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy("51")
+        assert account.balance == 50
+
+    def test_przelew_ekspresowy_kilka_string(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy("10")
+        account.przelew_ekspresowy("10")
+        account.przelew_ekspresowy("10")
+        account.przelew_ekspresowy("10")
+        assert account.balance == 5
+
+    def test_przelew_ekspresowy_string_bledny(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50)
+        account.przelew_ekspresowy("51k")
+        assert account.balance == 50
