@@ -54,3 +54,26 @@ class Account:
         suffix = res[len("PROM_"):]
         return res.startswith("PROM_") and len(res) == 8 and all(c.isalnum() for c in suffix)
            
+    def sprawdzanie_kwoty(self, kwota):
+        if isinstance(kwota, str):
+            if kwota.isdigit():
+                res = int(kwota)
+                return res
+            return False
+        if isinstance(kwota, int): # float? jak nie - dopisac testy
+            return kwota
+        return False
+    
+    def przelew_przychodzacy(self, kwota):
+        result = self.sprawdzanie_kwoty(kwota)
+        if result > 0:
+            self.balance = self.balance + result
+            return self.balance
+        return False
+    
+    def przelew_wychodzacy(self, kwota):
+        result = self.sprawdzanie_kwoty(kwota)
+        if result > 0 and self.balance>=result:
+            self.balance = self.balance - result
+            return self.balance
+        return False
