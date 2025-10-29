@@ -1,6 +1,7 @@
 class BaseAccount:
     def __init__(self):
          self.balance = 0.0
+         self.history = []
 
     kwota_express = 0.0
 
@@ -19,6 +20,7 @@ class BaseAccount:
         result = self.sprawdzanie_kwoty(kwota)
         if result > 0:
             self.balance = self.balance + result
+            self.history.append(result)
             return self.balance
         return False
     
@@ -26,6 +28,7 @@ class BaseAccount:
         result = self.sprawdzanie_kwoty(kwota)
         if result > 0 and self.balance>=result:
             self.balance = self.balance - result
+            self.history.append(-result)
             return self.balance
         return False
     
@@ -34,6 +37,7 @@ class BaseAccount:
         kwota_res = self.kwota_express
         if result > 0 and self.balance>=result:
             self.balance = self.balance - (result+kwota_res)
+            self.history.extend([-result, -kwota_res])
             return self.balance
         return False
      

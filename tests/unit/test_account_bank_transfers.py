@@ -129,7 +129,6 @@ class TestAccount_Transfers:
         account.przelew_wychodzacy(10.0)
         assert account.balance == 0.0
 
-
     def test_przelew_wych_jeden_int(self):
         account = Account("Vera", "Kibin", 12345678910)
         account.przelew_przychodzacy(50.0)
@@ -322,3 +321,109 @@ class TestAccount_Transfers:
         account.przelew_przychodzacy(12.34)
         account.przelew_ekspresowy(50.0)  
         assert round(account.balance, 4) == round(36.34, 4)
+
+## history
+
+    def test_history_pusty(self):
+        account = Account("Vera", "Kibin", 81020311161,)
+        assert account.history == []
+
+    def test_history_przelew_niepoprawny_typ(self):
+        account = Account("Vera", "Kibin", 81020311161,)
+        account.przelew_przychodzacy("money")
+        assert account.history == []
+
+    def test_history_jeden_przelew_prz_int(self):
+        account = Account("Vera", "Kibin", 12345678910)
+        account.przelew_przychodzacy(50.0)
+        assert account.history == [50.0]
+
+    def test_history_jeden_przelew_prz_str(self):
+        account = Account("Vera", "Kibin", 12345678910)
+        account.przelew_przychodzacy("50.0")
+        assert account.history == [50.0]
+
+    def test_history_przelew_prz_int_i_str_kilka(self):
+        account = Account("Vera", "Kibin", 12345678910)
+        account.przelew_przychodzacy(50.0)
+        account.przelew_przychodzacy("50.0")
+        account.przelew_przychodzacy(50.0)
+        assert account.history == [50.0, 50.0, 50.0]
+
+    def test_history_przelew_wych_jeden_int(self):
+        account = Account("Vera", "Kibin", 12345678910)
+        account.przelew_przychodzacy(50.0)
+        account.przelew_wychodzacy(45.0)
+        assert account.history == [50.0,-45.0]
+
+    def test_history_przelew_wych_jeden_int_z_balance(self):
+        account = Account("Vera", "Kibin", 12345678910)
+        account.balance = 50.0
+        account.przelew_wychodzacy(45.0)
+        assert account.history == [-45.0]
+
+    def test_history_przelew_wych_kilka_int_z_balance(self):
+        account = Account("Vera", "Kibin", 12345678910)
+        account.balance = 50.0
+        account.przelew_wychodzacy(5.0)
+        account.przelew_wychodzacy(5.0)
+        account.przelew_wychodzacy(5.0)
+        account.przelew_wychodzacy(5.0)
+        assert account.history == [-5.0,-5.0,-5.0,-5.0]
+
+    def test_history_przelew_wych_kilka_int_z_balance_z_przelew_prz(self):
+        account = Account("Vera", "Kibin", 12345678910)
+        account.balance = 50.0
+        account.przelew_wychodzacy(5.0)
+        account.przelew_przychodzacy(50.0)
+        account.przelew_wychodzacy(5.0)
+        account.przelew_przychodzacy(50.0)
+        account.przelew_wychodzacy(5.0)
+        account.przelew_przychodzacy(50.0)
+        account.przelew_wychodzacy(5.0)
+        assert account.history == [-5.0,50.0,-5.0,50.0,-5.0,50.0,-5.0]
+
+    def test_history_przelew_ekspresowy(self):
+        account = Account("Vera", "Kibin", 81020311161, "PROM_hej")
+        account.przelew_ekspresowy(45.0)
+        assert account.kwota_express == 1.0
+        assert account.balance == 4.0
+        assert account.history == [-45.0,-1.0]
+
+    def test_history_przelew_ekspresowy_i_dodatkowy_przelew_prz(self):
+        account = Account("Vera", "Kibin", 81020311161, "PROM_hej")
+        account.przelew_ekspresowy(45.0)
+        account.przelew_przychodzacy(4.0)
+        assert account.kwota_express == 1.0
+        assert account.balance == 8.0
+        assert account.history == [-45.0,-1.0,4.0]
+
+    def test_history_przelew_ekspresowy_i_dodatkowy_przelew_wych(self):
+        account = Account("Vera", "Kibin", 81020311161, "PROM_hej")
+        account.przelew_ekspresowy(45.0)
+        account.przelew_wychodzacy(4.0)
+        assert account.kwota_express == 1.0
+        assert account.balance == 0.0
+        assert account.history == [-45.0,-1.0,-4.0]
+
+    def test_history_no_entry_when_outgoing_insufficient(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        account.przelew_przychodzacy(10.0)
+        assert account.przelew_wychodzacy(11.0) is False
+        assert account.history == [10.0] 
+        assert account.balance == 10.0
+
+    def test_history_no_entry_when_outgoing_zero_or_negative(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        account.przelew_przychodzacy(10.0)
+        assert account.przelew_wychodzacy(0.0) is False
+        assert account.przelew_wychodzacy(-5.0) is False
+        assert account.history == [10.0]
+        assert account.balance == 10.0
+
+    def test_history_express_no_entry_when_amount_gt_balance(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        account.przelew_przychodzacy(10.0)
+        assert account.przelew_ekspresowy(11.0) is False
+        assert account.history == [10.0]
+        assert account.balance == 10.0
