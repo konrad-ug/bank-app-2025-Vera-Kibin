@@ -242,6 +242,13 @@ class TestBusinessAccount_Transfers:
         account.przelew_wychodzacy("1e2")
         assert account.balance == 10.0
 
+    def test_outgoing_invalid_type_dict(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(10.0)
+        ret = account.przelew_wychodzacy({"kwota": 5})  
+        assert ret is False
+        assert account.balance == 10.0
+
 ## przelewy ekspresowe
 
     def test_przelew_ekspresowy_z_prom(self):

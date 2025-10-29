@@ -148,4 +148,12 @@ class TestAccount:
         assert account.promo_code is None
         assert account.balance == 0.0
 
+    def test_promo_age_2101_century_code_40(self):
+        account = Account("Vera", "Kibin", "01430112345", "PROM_ABC")
+        assert account.promo_code == "PROM_ABC"
+        assert account.balance == 50.0
 
+    def test_promo_age_2202_century_code_60(self):
+        account = Account("Vera", "Kibin", "02620112345", "PROM_ABC")
+        assert account.promo_code == "PROM_ABC"
+        assert account.balance == 50.0
