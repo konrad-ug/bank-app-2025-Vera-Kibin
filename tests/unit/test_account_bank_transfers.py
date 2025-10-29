@@ -111,6 +111,17 @@ class TestAccount_Transfers:
         account.przelew_przychodzacy(0.2)
         assert round(account.balance, 2) == round(0.3, 2)
 
+    def test_incoming_invalid_type_none(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        account.przelew_przychodzacy(None)  
+        assert account.balance == 0.0
+
+    def test_incoming_invalid_type_list(self):
+        account = Account("Vera", "Kibin", 81020311161)
+        ret = account.przelew_przychodzacy([])    
+        assert ret is False
+        assert account.balance == 0.0
+
 ## przelew wychodzacy
 
     def test_przelew_wych_pusty_balance(self):
