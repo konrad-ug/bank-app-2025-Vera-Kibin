@@ -313,3 +313,106 @@ class TestBusinessAccount_Transfers:
         account.przelew_przychodzacy(12.34)
         account.przelew_ekspresowy(50.0)  
         assert round(account.balance, 4) == round(32.34, 4)
+
+## history
+
+    def test_history_pusty_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        assert account.history == []
+
+    def test_history_przelew_niepoprawny_typ_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy("money")
+        assert account.history == []
+
+    def test_history_jeden_przelew_prz_int_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50.0)
+        assert account.history == [50.0]
+
+    def test_history_jeden_przelew_prz_str_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy("50.0")
+        assert account.history == [50.0]
+
+    def test_history_przelew_prz_int_i_str_kilka_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50.0)
+        account.przelew_przychodzacy("50.0")
+        account.przelew_przychodzacy(50.0)
+        assert account.history == [50.0, 50.0, 50.0]
+
+    def test_history_przelew_wych_jeden_int_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50.0)
+        account.przelew_wychodzacy(45.0)
+        assert account.history == [50.0, -45.0]
+
+    def test_history_przelew_wych_kilka_int_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50.0)
+        account.przelew_wychodzacy(5.0)
+        account.przelew_wychodzacy(5.0)
+        account.przelew_wychodzacy(5.0)
+        account.przelew_wychodzacy(5.0)
+        assert account.history == [50.0, -5.0, -5.0, -5.0, -5.0]
+
+    def test_history_przelew_wych_kilka_z_przelewami_przych_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50.0)
+        account.przelew_wychodzacy(5.0)
+        account.przelew_przychodzacy(50.0)
+        account.przelew_wychodzacy(5.0)
+        account.przelew_przychodzacy(50.0)
+        account.przelew_wychodzacy(5.0)
+        account.przelew_przychodzacy(50.0)
+        account.przelew_wychodzacy(5.0)
+        assert account.history == [50.0, -5.0, 50.0, -5.0, 50.0, -5.0, 50.0, -5.0]
+
+    def test_history_przelew_ekspresowy_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50.0)
+        account.przelew_ekspresowy(45.0)
+        assert account.kwota_express == 5.0
+        assert account.balance == 0.0
+        assert account.history == [50.0, -45.0, -5.0]
+
+    def test_history_przelew_ekspresowy_plus_przych_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50.0)
+        account.przelew_ekspresowy(45.0)
+        account.przelew_przychodzacy(4.0)
+        assert account.kwota_express == 5.0
+        assert account.balance == 4.0
+        assert account.history == [50.0, -45.0, -5.0, 4.0]
+
+    def test_history_przelew_ekspresowy_plus_wych_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(50.0)
+        account.przelew_ekspresowy(45.0)
+        account.przelew_wychodzacy(4.0)
+        assert account.kwota_express == 5.0
+        assert account.balance == 0.0 
+        assert account.history == [50.0, -45.0, -5.0]
+
+    def test_history_no_entry_when_outgoing_insufficient_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(10.0)
+        assert account.przelew_wychodzacy(11.0) is False
+        assert account.history == [10.0]
+        assert account.balance == 10.0
+
+    def test_history_no_entry_when_outgoing_zero_or_negative_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(10.0)
+        assert account.przelew_wychodzacy(0.0) is False
+        assert account.przelew_wychodzacy(-5.0) is False
+        assert account.history == [10.0]
+        assert account.balance == 10.0
+
+    def test_history_express_no_entry_when_amount_gt_balance_business(self):
+        account = BusinessAccount("KIBINGUITARS", "1234567890")
+        account.przelew_przychodzacy(10.0)
+        assert account.przelew_ekspresowy(11.0) is False
+        assert account.history == [10.0]
+        assert account.balance == 10.0
