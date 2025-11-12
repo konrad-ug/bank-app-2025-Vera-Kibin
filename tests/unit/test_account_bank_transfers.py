@@ -427,3 +427,104 @@ class TestAccount_Transfers:
         assert account.przelew_ekspresowy(11.0) is False
         assert account.history == [10.0]
         assert account.balance == 10.0
+
+## kredyt
+
+    def test_loan_rule1_three_last_deposits_grants(self):
+        a = Account("Vera", "Kibin", 81020311161)
+        a.przelew_przychodzacy(10.0)
+        a.przelew_wychodzacy(5.0)
+        a.przelew_przychodzacy(20.0)
+        a.przelew_przychodzacy(30.0)
+        a.przelew_przychodzacy(40.0) 
+        start = a.balance
+        ok = a.submit_for_loan(100.0)
+        assert ok is True
+        assert a.history[-1] == 100.0
+        assert a.balance == start + 100.0
+
+    def test_loan_rule1_fails_when_last_three_not_all_positive(self):
+        a = Account("Vera", "Kibin", 81020311161)
+        a.przelew_przychodzacy(50.0)
+        a.przelew_przychodzacy(30.0)
+        a.przelew_wychodzacy(1.0) 
+        before_len = len(a.history)
+        start = a.balance
+        ok = a.submit_for_loan(10.0)
+        assert ok is False
+        assert len(a.history) == before_len
+        assert a.balance == start
+
+    def test_loan_rule2_sum5_greater_grants(self):
+        a = Account("Vera", "Kibin", 81020311161)
+        a.przelew_przychodzacy(100.0)
+        a.przelew_wychodzacy(50.0)
+        a.przelew_przychodzacy(60.0)
+        a.przelew_wychodzacy(10.0)
+        a.przelew_przychodzacy(5.0)
+        before_len = len(a.history)
+        start = a.balance
+        ok = a.submit_for_loan(100.0) 
+        assert ok is True
+        assert len(a.history) == before_len + 1
+        assert a.history[-1] == 100.0
+        assert a.balance == start + 100.0
+
+    def test_loan_rule2_equal_sum_fails(self):
+        a = Account("Vera", "Kibin", 81020311161)
+        a.przelew_przychodzacy(100.0)
+        a.przelew_wychodzacy(50.0)
+        a.przelew_przychodzacy(60.0)
+        a.przelew_wychodzacy(10.0)
+        a.przelew_przychodzacy(5.0)
+        before_len = len(a.history)
+        start = a.balance
+        ok = a.submit_for_loan(105.0) 
+        assert ok is False
+        assert len(a.history) == before_len
+        assert a.balance == start
+
+    def test_loan_rule2_requires_at_least_five_transactions(self):
+        a = Account("Vera", "Kibin", 81020311161)
+        a.przelew_przychodzacy(40.0)
+        a.przelew_przychodzacy(30.0)
+        a.przelew_wychodzacy(10.0)
+        a.przelew_przychodzacy(5.0)
+        before_len = len(a.history)
+        start = a.balance
+        ok = a.submit_for_loan(50.0)
+        assert ok is False
+        assert len(a.history) == before_len
+        assert a.balance == start
+
+    def test_loan_invalid_amounts_rejected(self):
+        a = Account("Vera", "Kibin", 81020311161)
+        before = (a.balance, list(a.history))
+        for bad in [0, -10, "abc", None]:
+            assert a.submit_for_loan(bad) is False
+        assert a.balance == before[0]
+        assert a.history == before[1]
+
+    def test_loan_string_amount_ok_with_rule1(self):
+        a = Account("Vera", "Kibin", 81020311161)
+        a.przelew_przychodzacy(1.0)
+        a.przelew_przychodzacy(2.0)
+        a.przelew_przychodzacy(3.0) 
+        start = a.balance
+        ok = a.submit_for_loan("100.0")
+        assert ok is True
+        assert a.history[-1] == 100.0
+        assert a.balance == start + 100.0
+
+    def test_loan_after_express_last_three_positive_still_grants(self):
+        a = Account("Vera", "Kibin", 81020311161)
+        a.przelew_przychodzacy(100.0)
+        a.przelew_ekspresowy(10.0)
+        a.przelew_przychodzacy(2.0)
+        a.przelew_przychodzacy(3.0)
+        a.przelew_przychodzacy(4.0)   
+        start = a.balance
+        ok = a.submit_for_loan(50.0)
+        assert ok is True
+        assert a.history[-1] == 50.0
+        assert a.balance == start + 50.0
