@@ -57,3 +57,28 @@ class Account(BaseAccount):
         suffix = res[len("PROM_"):]
         return res.startswith("PROM_") and len(res) == 8 and all(c.isalnum() for c in suffix)
     
+    def last_n_positive(self, n: int) -> bool:
+        return len(self.history) >= n and all(x > 0 for x in self.history[-n:])
+
+    def sum_last_n(self, n: int):
+        if len(self.history) < n:
+            return None
+        return sum(self.history[-n:])
+
+    def _eligible_for_loan(self, amount: float) -> bool:
+        if self.last_n_positive(3):
+            return True
+        s5 = self.sum_last_n(5)
+        if s5 is not None and s5 > amount:
+            return True
+        return False
+
+    def submit_for_loan(self, amount):
+        amt = self.sprawdzanie_kwoty(amount)
+        if not amt or amt <= 0:
+            return False
+        if self._eligible_for_loan(amt):
+            self.balance += amt
+            self.history.append(amt)
+            return True
+        return False
