@@ -17,3 +17,16 @@ class BusinessAccount(BaseAccount):
             return False
         res = str(nip)
         return len(res) == 10 and all('0' <= c <= '9' for c in res)
+    
+    def has_zus_transfer(self) -> bool:
+        return any(x == -1775.0 for x in self.history)
+
+    def submit_for_loan(self, amount):
+        amt = self.sprawdzanie_kwoty(amount)
+        if not amt or amt <= 0:
+            return False
+        if self.balance >= 2 * amt and self.has_zus_transfer():
+            self.balance += amt
+            self.history.append(amt)
+            return True
+        return False
