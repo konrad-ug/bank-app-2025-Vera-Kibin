@@ -263,17 +263,16 @@ class TestBusinessAccount_Transfers:
     @pytest.fixture
     def account_with_zus(self, account):
         account.przelew_przychodzacy(10_000.0)
-        account.przelew_wychodzacy(1775.0)  # w historii musi być -1775.0
-        # szybka asercja ochronna – jeśli ta linia padnie, popraw BaseAccount:
+        account.przelew_wychodzacy(1775.0)
         assert -1775.0 in account.history
         return account
 
     @pytest.mark.parametrize(
         "start_balance, amount, ok_expected, final_balance",
         [
-            (4000.0, 1000.0, True,  5000.0),   # > 2x
-            (2000.0, 1000.0, True,  3000.0),   # = 2x
-            (1999.99,1000.0, False, 1999.99),  # < 2x
+            (4000.0, 1000.0, True,  5000.0),
+            (2000.0, 1000.0, True,  3000.0),
+            (1999.99,1000.0, False, 1999.99),
         ],
         ids=["gt-2x","eq-2x","lt-2x"]
     )
