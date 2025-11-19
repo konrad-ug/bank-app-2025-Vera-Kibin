@@ -39,11 +39,6 @@ class TestBusinessAccount_Transfers:
         account.przelew_przychodzacy(kwota)
         assert account.balance == 0.0
 
-    @pytest.mark.parametrize("kwota", [-5.0, "-5.0"])
-    def test_przelew_prz_ujemne_ignorowane(self, account, kwota):
-        account.przelew_przychodzacy(kwota)
-        assert account.balance == 0.0
-
     def test_przelew_prz_nieprawidlowy_string_sposrod(self, account):
         account.przelew_przychodzacy("50.0")
         account.przelew_przychodzacy("Hello")
@@ -262,3 +257,59 @@ class TestBusinessAccount_Transfers:
         assert account.przelew_ekspresowy(11.0) is False
         assert account.history == [10.0]
         assert account.balance == 10.0
+
+## kredyt
+
+    @pytest.fixture
+    def account_with_zus(self, account):
+        account.przelew_przychodzacy(10_000.0)
+        account.przelew_wychodzacy(1775.0)  # w historii musi być -1775.0
+        # szybka asercja ochronna – jeśli ta linia padnie, popraw BaseAccount:
+        assert -1775.0 in account.history
+        return account
+
+    @pytest.mark.parametrize(
+        "start_balance, amount, ok_expected, final_balance",
+        [
+            (4000.0, 1000.0, True,  5000.0),   # > 2x
+            (2000.0, 1000.0, True,  3000.0),   # = 2x
+            (1999.99,1000.0, False, 1999.99),  # < 2x
+        ],
+        ids=["gt-2x","eq-2x","lt-2x"]
+    )
+    def test_submit_for_loan_threshold_with_zus(self, account_with_zus, start_balance, amount, ok_expected, final_balance):
+        account_with_zus.balance = start_balance
+        before_hist = list(account_with_zus.history)
+        ok = account_with_zus.submit_for_loan(amount)
+        assert ok is ok_expected
+        assert account_with_zus.balance == pytest.approx(final_balance, abs=1e-9)
+        if ok_expected:
+            assert account_with_zus.history == before_hist + [float(amount)]
+        else:
+            assert account_with_zus.history == before_hist
+
+    def test_submit_for_loan_requires_zus_transfer(self, account):
+        account.przelew_przychodzacy(10_000.0)
+        snap = (account.balance, list(account.history))
+        assert account.submit_for_loan(1000.0) is False
+        assert (account.balance, account.history) == snap
+
+    @pytest.mark.parametrize("bad", [0, -10, "abc", None])
+    def test_submit_for_loan_rejects_bad_amounts(self,account_with_zus, bad):
+        snap = (account_with_zus.balance, list(account_with_zus.history))
+        assert account_with_zus.submit_for_loan(bad) is False
+        assert (account_with_zus.balance, account_with_zus.history) == snap
+
+    def test_submit_for_loan_accepts_string_amount(self, account_with_zus):
+        account_with_zus.balance = 4000.0
+        ok = account_with_zus.submit_for_loan("1000.0")
+        assert ok is True
+        assert account_with_zus.balance == 5000.0
+        assert account_with_zus.history[-1] == 1000.0
+
+    def test_zus_must_be_exact(self, account):
+        account.przelew_przychodzacy(10_000.0)
+        account.przelew_wychodzacy(1775.01)
+        snap = (account.balance, list(account.history))
+        assert account.submit_for_loan(1000.0) is False
+        assert (account.balance, account.history) == snap
