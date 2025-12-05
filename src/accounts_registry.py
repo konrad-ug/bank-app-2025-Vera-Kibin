@@ -22,3 +22,10 @@ class AccountsRegistry:
 
     def count(self) -> int:
         return len(self.accounts)
+    
+    def remove_by_pesel(self, pesel: str) -> bool:
+        acc = self.find_by_pesel(pesel)
+        if not acc:
+            return False
+        self.accounts.remove(acc)
+        return True
