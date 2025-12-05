@@ -65,3 +65,26 @@ class TestAccountRegistry:
         a = registry.all_accounts()
         b = registry.all_accounts()
         assert a is not b
+
+    def test_remove_by_pesel_ok(self, registry, alice, bob):
+        registry.add_account(alice)
+        registry.add_account(bob)
+        assert registry.count() == 2
+
+        ok = registry.remove_by_pesel(alice.pesel)
+        assert ok is True
+        assert registry.count() == 1
+        assert registry.find_by_pesel(alice.pesel) is None
+
+    def test_remove_by_pesel_missing(self, registry, alice):
+        registry.add_account(alice)
+        before = (registry.count(), registry.all_accounts())
+        ok = registry.remove_by_pesel("99999999999")
+        assert ok is False
+        assert registry.count() == before[0]
+        assert registry.all_accounts() == before[1]
+
+    def test_remove_by_pesel_twice(self, registry, alice):
+        registry.add_account(alice)
+        assert registry.remove_by_pesel(alice.pesel) is True
+        assert registry.remove_by_pesel(alice.pesel) is False
