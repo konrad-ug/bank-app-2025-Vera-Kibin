@@ -109,3 +109,16 @@ class TestCrudApi:
     def test_delete_missing_returns_404(self):
         r = requests.delete(f"{self.url}/api/accounts/NOPE", timeout=5)
         assert r.status_code == 404
+
+    def test_post_conflict_returns_409(self):
+        r = requests.post(f"{self.url}/api/accounts", json=self.account_data, timeout=5)
+        assert r.status_code == 409
+        assert r.json()["message"].lower().startswith("account with this pesel")
+
+    def test_conflict_does_not_change_count(self):
+        r_cnt1 = requests.get(f"{self.url}/api/accounts/count", timeout=5)
+        assert r_cnt1.status_code == 200 and r_cnt1.json() == {"count": 1}
+        r_conf = requests.post(f"{self.url}/api/accounts", json=self.account_data, timeout=5)
+        assert r_conf.status_code == 409
+        r_cnt2 = requests.get(f"{self.url}/api/accounts/count", timeout=5)
+        assert r_cnt2.status_code == 200 and r_cnt2.json() == {"count": 1}
