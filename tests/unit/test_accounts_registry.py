@@ -88,3 +88,9 @@ class TestAccountRegistry:
         registry.add_account(alice)
         assert registry.remove_by_pesel(alice.pesel) is True
         assert registry.remove_by_pesel(alice.pesel) is False
+
+    def test_registry_rejects_duplicate_pesel(self, registry, alice):
+        assert registry.add_account(alice) is True
+        dup = Account("Alice2", "A2", "01234567890")
+        assert registry.add_account(dup) is False
+        assert registry.count() == 1

@@ -8,7 +8,10 @@ class AccountsRegistry:
     def add_account(self, account: Account) -> None:
         if not isinstance(account, Account):
             raise TypeError("Only personal Account instances are allowed")
+        if self.find_by_pesel(account.pesel):
+            return False
         self.accounts.append(account)
+        return True
 
     def find_by_pesel(self, pesel) -> Optional[Account]:
         key = str(pesel)
