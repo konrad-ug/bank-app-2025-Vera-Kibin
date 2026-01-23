@@ -1,6 +1,9 @@
+from datetime import date
 from src.base_account import BaseAccount
+from smtp.smtp import SMTPClient
 
 class Account(BaseAccount):
+    history_email_text_template = "Personal account history: {}"
     def __init__(self, first_name, last_name, pesel, promo_kod=None):
         super().__init__()
         self.kwota_express = 1.0
@@ -82,3 +85,9 @@ class Account(BaseAccount):
             self.history.append(amt)
             return True
         return False
+    
+    def send_history_via_email(self, email_address: str) -> bool:
+        today_date = date.today().strftime("%Y-%m-%d")
+        subject = "Account Transfer History " + today_date
+        text = self.history_email_text_template.format(self.history)
+        return SMTPClient.send(subject, text, email_address)
