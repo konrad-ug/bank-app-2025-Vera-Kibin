@@ -1,12 +1,18 @@
+from pytest_mock import mocker
 from src.business_account import BusinessAccount
 import pytest
 
+
+@pytest.fixture(autouse=True)
+def _stub_mf(mocker):
+    mocker.patch.object(BusinessAccount, "verify_nip_with_mf", return_value=True)
+    
 class TestBusinessAccount_Transfers:
 
     @pytest.fixture
     def account(self):
             return BusinessAccount("KIBINGUITARS", "1234567890")
-
+    
     ## przelew przychodzacy
 
     @pytest.mark.parametrize("kwota", ["50.0", 50.0, 50])

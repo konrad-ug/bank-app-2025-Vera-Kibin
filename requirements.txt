@@ -2,3 +2,4 @@ pytest==8.4.2
 coverage==6.5.0
 Flask
 requests
+pytest-mock

@@ -1,4 +1,5 @@
 import pytest
+from pytest_mock import MockerFixture, mocker
 from src.account import Account
 from src.business_account import BusinessAccount
 from src.accounts_registry import AccountsRegistry
@@ -39,7 +40,8 @@ class TestAccountRegistry:
         snapshot.append(object())
         assert registry.count() == 1
 
-    def test_rejects_non_personal_accounts(self, registry):
+    def test_rejects_non_personal_accounts(self, registry, mocker: MockerFixture):
+        mocker.patch.object(BusinessAccount, "verify_nip_with_mf", return_value=True)
         ba = BusinessAccount("KIBINGUITARS", "1234567890")
         with pytest.raises(TypeError):
             registry.add_account(ba)
