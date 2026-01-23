@@ -2,8 +2,11 @@ import os
 import datetime as dt
 import requests
 from src.base_account import BaseAccount
+from datetime import date
+from smtp.smtp import SMTPClient
 
 class BusinessAccount(BaseAccount):
+    histoty_email_text_template = "Company account history: {}"
     def __init__(self, company_name, nip):
         super().__init__()
         self.kwota_express = 5.0
@@ -58,3 +61,9 @@ class BusinessAccount(BaseAccount):
         except Exception as e:
             print(f"[MF] request error: {e}")
             return False
+        
+    def send_history_via_email(self, email_address: str) -> bool:
+        today_date = date.today().strftime("%Y-%m-%d")
+        subject = "Account Transfer History "+ today_date
+        text = self.histoty_email_text_template.format(self.history)
+        return SMTPClient.send(subject, text, email_address)
