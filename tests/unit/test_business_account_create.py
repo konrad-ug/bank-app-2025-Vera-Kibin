@@ -1,6 +1,15 @@
 from src.business_account import BusinessAccount
 import pytest
 
+@pytest.fixture(autouse=True)
+def _stub_mf(mocker):
+    mocker.patch.object(BusinessAccount, "verify_nip_with_mf", return_value=True)
+
+def test_ctor_raises_when_mf_denies(mocker):
+    mocker.patch.object(BusinessAccount, "verify_nip_with_mf", return_value=False)
+    with pytest.raises(ValueError, match="Company not registered!!"):
+        BusinessAccount("ACME", "1234567890")
+        
 class TestBusinessAccount:
 
     @pytest.fixture
