@@ -1,6 +1,7 @@
 pytest==8.4.2
 coverage==6.5.0
 Flask~=3.1.2
-requests~=2.32.5
+requests>=2.31
 pytest-mock
 Faker
+behave==1.2.6
