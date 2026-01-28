@@ -1,7 +1,7 @@
 import pytest
 import src.mongo_account_repository as mod
 from src.account import Account
-
+VALID_PESEL = "12345678901"
 class FakeCollection:
     def __init__(self):
         self.calls = []
@@ -49,18 +49,18 @@ def test_init_uses_mongo_client_and_save_all(monkeypatch):
         uri="mongodb://fake", db_name="db", collection_name="col"
     )
 
-    a = Account("John", "Doe", "123")
+    a = Account("John", "Doe", VALID_PESEL)
     repo.save_all([a])
 
     coll = created["client"]["db"]["col"]
     assert ("delete_many", {}) in coll.calls
-    assert any(c[0] == "update_one" and c[1] == {"pesel": "123"} and c[3] is True for c in coll.calls)
+    assert any(c[0] == "update_one" and c[1] == {"pesel": VALID_PESEL} and c[3] is True for c in coll.calls)
 
 def test_load_all_reads_back(monkeypatch):
     def fake_mongo_client(uri):
         client = FakeClient(uri)
         coll = client["db"]["col"]
-        coll.set_docs([Account("A", "B", "111").to_dict()])
+        coll.set_docs([Account("A", "B", VALID_PESEL).to_dict()])
         return client
 
     monkeypatch.setattr(mod, "MongoClient", fake_mongo_client)
@@ -70,4 +70,4 @@ def test_load_all_reads_back(monkeypatch):
     )
     accounts = repo.load_all()
     assert len(accounts) == 1
-    assert accounts[0].pesel == "111"
+    assert accounts[0].pesel == VALID_PESEL
